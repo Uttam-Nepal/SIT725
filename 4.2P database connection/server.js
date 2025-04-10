@@ -9,7 +9,7 @@ app.use(express.static(__dirname + "/public"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// MongoDB connection string
+// MongoDB connection
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
@@ -19,7 +19,6 @@ mongoose
     console.log("MongoDB connection error:", err);
   });
 
-// Define the data schema
 const dataSchema = new mongoose.Schema({
   title: String,
   image: String,
@@ -29,7 +28,7 @@ const dataSchema = new mongoose.Schema({
 
 const Data = mongoose.model("Data", dataSchema);
 
-// API endpoint to fetch data from MongoDB
+// fetch data from MongoDB
 app.get("/api/data", async (req, res) => {
   try {
     const data = await Data.find(); // Fetch all records
@@ -40,7 +39,6 @@ app.get("/api/data", async (req, res) => {
   }
 });
 
-// Start the server
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);

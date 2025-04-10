@@ -6,13 +6,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.log("Fetched data:", data); // Debug API response
 
     if (!Array.isArray(data)) {
-      console.error("❌ Expected an array but got:", data);
+      console.error(" Expected an array but got:", data);
       return;
     }
 
     const cardContainer = document.getElementById("cardList");
     if (!cardContainer) {
-      console.error("❌ Error: #cardList not found!");
+      console.error(" Error: #cardList not found!");
       return;
     }
 
@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.log("Processing item:", item); // Debugging log
 
       if (!item.title || !item.image || !item.description) {
-        console.warn("⚠️ Missing properties in:", item);
+        console.warn(" Missing properties in:", item);
       }
 
       const cardHTML = `
@@ -51,6 +51,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       cardContainer.innerHTML += cardHTML;
     });
   } catch (error) {
-    console.error("❌ Fetch error:", error);
+    console.error(" Fetch error:", error);
   }
 });
