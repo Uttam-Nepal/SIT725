@@ -1,7 +1,15 @@
 FROM node:18
+
 WORKDIR /app
+
+# Copy package files from root
 COPY package*.json ./
+
+# Install dependencies
 RUN npm install
-COPY backend/. .
-EXPOSE 3000
+
+# Copy backend code from backend/ folder
+COPY backend/ ./
+
 CMD ["node", "server.js"]
+

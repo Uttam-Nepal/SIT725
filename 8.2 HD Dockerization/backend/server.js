@@ -2,14 +2,16 @@ const express = require("express");
 const path = require("path");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
+const cors = require("cors");
+const jwt = require("jsonwebtoken");
+
+const dockerRoute = require("./controllers/dockerController");
 const seedSuperAdmin = require("./seeders/admin");
 const {
   handleLogin,
   handleLogout,
   handleRegister,
 } = require("./controllers/authController");
-const jwt = require("jsonwebtoken");
-const User = require("./models/user");
 const {
   getQuestions,
   createQuestion,
@@ -18,7 +20,6 @@ const {
   getQuestionDetails,
   addQuestionReport,
 } = require("./controllers/questionController");
-const isAuthenticated = require("./middlewares/isAuthenticated");
 const {
   createAnswer,
   updateAnswer,
@@ -31,23 +32,24 @@ const {
   createUser,
   getUserDetails,
 } = require("./controllers/userController");
-const isSuperAdmin = require("./middlewares/isSuperAdmin");
 const {
   getProfile,
   updateProfile,
 } = require("./controllers/profileController");
+const isAuthenticated = require("./middlewares/isAuthenticated");
+const isSuperAdmin = require("./middlewares/isSuperAdmin");
+const User = require("./models/user");
 
-const cors = require("cors");
-const router = express.Router();
 dotenv.config();
 
 const app = express();
-app.use(cors());
+const router = express.Router();
 
+app.use(cors());
+app.use(express.json());
 app.use(express.static(path.join(__dirname, "..", "public")));
 
-app.use(express.json());
-
+// Middleware to extract session from JWT
 const extractSession = (req, res, next) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
@@ -76,13 +78,11 @@ app.use(extractSession);
 app.use("/api", router);
 
 // ************** Auth Routes **************
-
 router.post("/auth/logout", handleLogout);
 router.post("/auth/register", handleRegister);
 router.post("/auth/login", handleLogin);
 
 // ************** Question Routes **************
-
 router.get("/questions", getQuestions);
 router.get("/questions/:id", getQuestionDetails);
 router.post("/questions", isAuthenticated, createQuestion);
@@ -91,13 +91,11 @@ router.delete("/questions/:id", isAuthenticated, deleteQuestion);
 router.post("/questions/:id/report", isAuthenticated, addQuestionReport);
 
 // ************** Answer Routes **************
-
 router.post("/answers", isAuthenticated, createAnswer);
 router.put("/answers/:id", isAuthenticated, updateAnswer);
 router.delete("/answers/:id", isAuthenticated, deleteAnswer);
 
 // ************** User Routes **************
-
 router.get("/users", isAuthenticated, getUsers);
 router.get("/users/:id", isAuthenticated, getUserDetails);
 router.post("/users", isAuthenticated, isSuperAdmin, createUser);
@@ -105,14 +103,27 @@ router.put("/users/:id", isAuthenticated, updateUser);
 router.delete("/users/:id", isAuthenticated, deleteUser);
 
 // ************** Profile Routes **************
-
 router.get("/profile", isAuthenticated, getProfile);
 router.post("/profile", isAuthenticated, updateProfile);
-mongoose.connect(process.env.MONGODB_URI).then(() => {
-  app.listen(process.env.PORT, () =>
-    console.log(`Server on ${process.env.PORT}`)
-  );
-});
+
+// ************** Docker Test Route **************
+router.get("/student", dockerRoute);
+
+// ************** Database Connection **************
+mongoose
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => {
+    console.log(" MongoDB connected");
+    app.listen(process.env.PORT || 3000, () =>
+      console.log(`Server running on port ${process.env.PORT || 3000}`)
+    );
+  })
+  .catch((err) => {
+    console.error(" MongoDB connection error:", err);
+  });
 
 mongoose.connection.once("open", async () => {
   await seedSuperAdmin();
